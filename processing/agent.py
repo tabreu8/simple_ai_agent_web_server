@@ -3,11 +3,16 @@ import uuid
 from dotenv import load_dotenv
 from agents import Agent, Runner, SQLiteSession
 
+import os
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 DEFAULT_MODEL = "gpt-4.1"
-DB_PATH = "conversation_history.db"
+MEMORY_DIR = "memory"
+DB_PATH = os.path.join(MEMORY_DIR, "conversation_history.db")
+
+# Ensure the memory directory exists
+os.makedirs(MEMORY_DIR, exist_ok=True)
 
 # Basic agent setup
 def get_agent(model: str = None):
