@@ -18,6 +18,12 @@ This project is a FastAPI server using the OpenAI Agents SDK. It provides an end
 2. Install dependencies: `pip install -r requirements.txt`
 3. Run the server: `uvicorn main:app --reload`
 
+## Session Memory
+
+The `session_id` parameter allows the agent to remember previous messages and maintain conversation context. If you use the same `session_id` for multiple requests, the agent will recall earlier exchanges and respond accordingly. If you omit `session_id`, a new session is created and returned in the response.
+
+This enables multi-turn conversations, where the agent can remember facts (like your name) or previous questions within the same session.
+
 ## API Example
 ```
 POST /agent/query
