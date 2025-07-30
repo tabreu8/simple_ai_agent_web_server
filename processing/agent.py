@@ -1,7 +1,9 @@
 import os
 import uuid
 from dotenv import load_dotenv
-from agents import Agent, Runner, SQLiteSession
+
+from agents import Agent, Runner, SQLiteSession, WebSearchTool
+
 
 import os
 load_dotenv()
@@ -14,20 +16,36 @@ DB_PATH = os.path.join(MEMORY_DIR, "conversation_history.db")
 # Ensure the memory directory exists
 os.makedirs(MEMORY_DIR, exist_ok=True)
 
-# Basic agent setup
-def get_agent(model: str = None):
-    return Agent(
+
+
+
+
+# Main agent runner function
+async def run_agent(query: str, session_id: str = None, model: str = None):
+    """
+    Run the agent with the given query, session ID, and optional model override.
+    If session_id is not provided, a new one is generated.
+    Returns the agent's response and the session ID used.
+    """
+    if not OPENAI_API_KEY:
+        raise ValueError("OPENAI_API_KEY not set in .env file.")
+
+    # Generate a new session ID if not provided
+    if not session_id:
+        session_id = str(uuid.uuid4())
+
+    # Define the agent instance (with optional model override)
+    agent = Agent(
         name="Helpful Assistant",
         instructions="You are a helpful assistant.",
         model=model or DEFAULT_MODEL,
+        tools=[WebSearchTool()],
     )
 
-async def run_agent(query: str, session_id: str = None, model: str = None):
-    if not OPENAI_API_KEY:
-        raise ValueError("OPENAI_API_KEY not set in .env file.")
-    if not session_id:
-        session_id = str(uuid.uuid4())
-    agent = get_agent(model)
+    # Set up persistent session memory
     session = SQLiteSession(session_id, DB_PATH)
+
+    # Run the agent and get the result
     result = await Runner.run(agent, query, session=session)
+
     return result.final_output, session_id
