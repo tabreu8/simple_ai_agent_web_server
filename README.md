@@ -1,53 +1,221 @@
-# Simple AI Agent Web Server
+# 🤖 AI Agent Web Server
 
-A Python FastAPI server using OpenAI Agents SDK with persistent ChromaDB vector storage and document processing capabilities.
+A smart document assistant that helps you upload documents and chat with an AI agent that has access to your knowledge base. Upload PDFs, Word documents, or text files, then ask questions and get answers based on your uploaded content!
 
-## Features
+## ✨ What Can It Do?
 
-- **OpenAI Agents SDK**: AI agent functionality with session memory
-- **ChromaDB Vector Store**: Persistent vector database for document storage and retrieval
-- **Document Processing**: Support for PDF, DOCX, and other file formats using MarkItDown
-- **FastAPI**: Modern, fast web framework with automatic API documentation
-- **Environment Configuration**: .env-based configuration
+- 📄 **Upload Documents**: Support for PDF, Word (.docx), PowerPoint (.pptx), Excel (.xlsx), text files, and more
+- 🤖 **Smart AI Agent**: Chat with an AI that can search through your uploaded documents
+- 🔍 **Knowledge Search**: Find relevant information from your document collection
+- 💬 **Conversation Memory**: The AI remembers context within conversation sessions
+- 🌐 **Web Access**: AI can also search the web for additional information
 
-## Project Structure
+## 🚀 Quick Start
 
-```
-├── main.py                     # FastAPI server entry point
-├── requirements.txt            # Python dependencies
-├── .env.example               # Environment variables template
-├── processing/
-│   └── agent.py               # AI agent logic
-├── routes/
-│   ├── agent_api.py           # Agent API routes
-│   └── docs_api.py            # Document management API routes
-└── knowledge_base/
-    ├── __init__.py            # Package initialization
-    ├── chromadb.py            # ChromaDB operations
-    └── doc_parsing.py         # Document parsing using MarkItDown
-```
+### 1. Setup Your Environment
 
-## Setup
-
-### 1. Environment Setup
-
-Create a virtual environment and install dependencies:
+First, make sure you have Python 3.8+ installed. Then:
 
 ```bash
+# Clone or download this project
+cd simple_ai_agent_web_server
+
+# Create a virtual environment
 python3 -m venv venv
+
+# Activate it
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Environment Configuration
+### 2. Configure Your OpenAI API Key
 
-Copy the example environment file and configure your settings:
+Create a `.env` file with your OpenAI API key:
 
 ```bash
+# Copy the example file
 cp .env.example .env
 ```
 
-Edit `.env` with your configuration:
+Edit the `.env` file and add your OpenAI API key:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+> 💡 **Need an API key?** Get one from [OpenAI's website](https://platform.openai.com/api-keys)
+
+### 3. Start the Server
+
+```bash
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The server will start at `http://localhost:8000` 🎉
+
+## 📖 How to Use
+
+### Using the Interactive API Documentation
+
+The easiest way to try the application is through the built-in API documentation:
+
+1. Open your browser to `http://localhost:8000/docs`
+2. You'll see an interactive interface where you can test all features
+
+### 📄 Upload Documents
+
+**Option 1: Upload a file**
+1. Go to `http://localhost:8000/docs`
+2. Find the `POST /docs/insert` endpoint
+3. Click "Try it out"
+4. Use the file upload option to select your document
+5. Click "Execute"
+
+**Option 2: Add text directly**
+1. Use the same endpoint but provide JSON data:
+```json
+{
+  "documents": [
+    {
+      "content": "Your document text here",
+      "metadata": {
+        "filename": "my_notes.txt",
+        "category": "personal"
+      }
+    }
+  ]
+}
+```
+
+### 🤖 Chat with the AI Agent
+
+1. Go to the `POST /agent/query` endpoint
+2. Try asking questions about your uploaded documents:
+
+```json
+{
+  "query": "What information do you have about project management?",
+  "session_id": "my_session_001"
+}
+```
+
+**Example Questions:**
+- "Summarize the main points from the uploaded documents"
+- "What does the manual say about installation procedures?"
+- "Find information about pricing in the uploaded files"
+
+### 🔍 Search Your Documents
+
+Use the `GET /docs/search` endpoint to search without the AI:
+
+```
+GET /docs/search?query=installation&n_results=5
+```
+
+## 💡 Usage Examples
+
+### Complete Workflow Example
+
+1. **Upload a document** (e.g., a user manual PDF)
+2. **Ask the AI**: "How do I install this software according to the manual?"
+3. **Follow up**: "What are the system requirements?"
+4. **Search directly**: Find all mentions of "troubleshooting"
+
+### Conversation Sessions
+
+Use the same `session_id` to maintain conversation context:
+
+```json
+// First message
+{
+  "query": "What projects are mentioned in the documents?",
+  "session_id": "work_session_123"
+}
+
+// Follow-up message (same session)
+{
+  "query": "What's the budget for the first project you mentioned?",
+  "session_id": "work_session_123"
+}
+```
+
+## 🛠️ Supported File Types
+
+- **PDFs** (.pdf)
+- **Microsoft Word** (.docx)
+- **PowerPoint** (.pptx) 
+- **Excel** (.xlsx)
+- **Text files** (.txt)
+- **Markdown** (.md)
+- **HTML** (.html)
+- **CSV** (.csv)
+- **JSON** (.json)
+- **XML** (.xml)
+
+## 🌐 API Endpoints Overview
+
+| Endpoint | Method | Purpose |
+|----------|--------|---------|
+| `/docs/insert` | POST | Upload documents or add text |
+| `/docs/search` | GET | Search through documents |
+| `/docs/{doc_id}` | GET | Get specific document |
+| `/docs/{doc_id}` | PUT | Update document |
+| `/docs/{doc_id}` | DELETE | Delete document |
+| `/docs/stats` | GET | Get collection statistics |
+| `/agent/query` | POST | Chat with AI agent |
+
+## 🎯 Use Cases
+
+- **Personal Knowledge Base**: Upload your notes, manuals, and documents, then ask questions
+- **Customer Support**: Upload product documentation and let the AI help answer questions
+- **Research Assistant**: Upload research papers and get summaries or find specific information
+- **Document Analysis**: Upload reports and ask for insights or specific data points
+- **Learning Aid**: Upload textbooks or course materials and ask study questions
+
+## 🔧 Configuration Options
+
+Edit your `.env` file to customize:
+
+```env
+# Required
+OPENAI_API_KEY=your_api_key
+
+# Optional - Storage locations
+CHROMADB_PATH=knowledge_base     # Where documents are stored
+AGENT_MEMORY_PATH=memory         # Where conversation history is stored
+CHROMADB_COLLECTION=standard_collection  # Database collection name
+```
+
+## ❓ Troubleshooting
+
+**The AI doesn't find information from my documents:**
+- Make sure your documents uploaded successfully (check the upload response)
+- Try rephrasing your question
+- The AI searches for semantically similar content, not exact keyword matches
+
+**Upload fails:**
+- Check that your file type is supported
+- Ensure the file isn't corrupted
+- Large files may take longer to process
+
+**API key errors:**
+- Verify your OpenAI API key is correct in the `.env` file
+- Make sure you have credits available in your OpenAI account
+
+**Server won't start:**
+- Check that port 8000 isn't already in use
+- Make sure all dependencies are installed: `pip install -r requirements.txt`
+
+## 🤝 Need Help?
+
+- Check the interactive API docs at `http://localhost:8000/docs`
+- Look at the example requests in the API documentation
+- See `README-DEV.md` for technical details and development information
+
+---
+
+*Enjoy building your smart document assistant! 🚀*
 
 ```bash
 # OpenAI API Key (required for agent functionality)
@@ -99,7 +267,9 @@ Response:
 }
 ```
 
-The `session_id` parameter allows the agent to remember previous messages and maintain conversation context. If you use the same `session_id` for multiple requests, the agent will recall earlier exchanges and respond accordingly.
+---
+
+*Enjoy building your smart document assistant! 🚀*
 
 ### Document Management API
 
