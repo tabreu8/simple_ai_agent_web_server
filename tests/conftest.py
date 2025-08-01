@@ -23,6 +23,17 @@ from main import app
 
 
 @pytest.fixture(scope="session")
+def openai_api_key():
+    """Check if OpenAI API key is available from .env file."""
+    from dotenv import load_dotenv
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        pytest.skip("OPENAI_API_KEY not found in .env file - skipping agent tests")
+    return api_key
+
+
+@pytest.fixture(scope="session")
 def event_loop():
     """Create an instance of the default event loop for the test session."""
     loop = asyncio.get_event_loop_policy().new_event_loop()

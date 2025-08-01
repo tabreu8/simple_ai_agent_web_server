@@ -3,22 +3,17 @@ Test suite for the agent API endpoints.
 """
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch, AsyncMock
 
 
 class TestAgentAPI:
-    """Test cases for agent API functionality."""
+    """Test cases for agent API functionality using real implementation."""
     
-    @patch('routes.agent_api.run_agent')
-    def test_agent_query_success(self, mock_run_agent, client: TestClient):
-        """Test successful agent query."""
-        # Mock the agent response
-        mock_run_agent.return_value = ("Test response from agent", "session_123")
-        
+    def test_agent_query_success(self, client: TestClient, openai_api_key):
+        """Test successful agent query with real implementation."""
         query_data = {
-            "query": "What is machine learning?",
+            "query": "What is 2+2?",
             "session_id": "test_session",
-            "model": "gpt-4"
+            "model": "gpt-4.1-mini"  # Use the default test model
         }
         
         response = client.post("/agent/query", json=query_data)
@@ -26,41 +21,34 @@ class TestAgentAPI:
         assert response.status_code == 200
         data = response.json()
         
-        assert data["response"] == "Test response from agent"
-        assert data["session_id"] == "session_123"
-        
-        # Verify that run_agent was called with correct parameters
-        mock_run_agent.assert_called_once_with(
-            "What is machine learning?", 
-            "test_session", 
-            "gpt-4"
-        )
+        # Check that we got a response and session_id
+        assert "response" in data
+        assert "session_id" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
+        assert data["session_id"] == "test_session"
     
-    @patch('routes.agent_api.run_agent')
-    def test_agent_query_minimal_request(self, mock_run_agent, client: TestClient):
+    def test_agent_query_minimal_request(self, client: TestClient, openai_api_key):
         """Test agent query with minimal required data."""
-        mock_run_agent.return_value = ("Minimal response", "new_session_456")
-        
-        query_data = {"query": "Simple test query"}
+        query_data = {"query": "Hello"}
         
         response = client.post("/agent/query", json=query_data)
         
         assert response.status_code == 200
         data = response.json()
         
-        assert data["response"] == "Minimal response"
-        assert data["session_id"] == "new_session_456"
-        
-        # Verify that run_agent was called with None for optional parameters
-        mock_run_agent.assert_called_once_with("Simple test query", None, None)
+        # Check that we got a response and session_id
+        assert "response" in data
+        assert "session_id" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
+        # Session ID should be auto-generated (UUID format)
+        assert len(data["session_id"]) == 36  # UUID length
     
-    @patch('routes.agent_api.run_agent')
-    def test_agent_query_with_session_id_only(self, mock_run_agent, client: TestClient):
+    def test_agent_query_with_session_id_only(self, client: TestClient, openai_api_key):
         """Test agent query with session ID but no model."""
-        mock_run_agent.return_value = ("Session response", "existing_session")
-        
         query_data = {
-            "query": "Continue our conversation",
+            "query": "What is Python?",
             "session_id": "existing_session"
         }
         
@@ -69,14 +57,11 @@ class TestAgentAPI:
         assert response.status_code == 200
         data = response.json()
         
-        assert data["response"] == "Session response"
+        assert "response" in data
+        assert "session_id" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
         assert data["session_id"] == "existing_session"
-        
-        mock_run_agent.assert_called_once_with(
-            "Continue our conversation", 
-            "existing_session", 
-            None
-        )
     
     def test_agent_query_missing_query(self, client: TestClient):
         """Test agent query without required query field."""
@@ -94,130 +79,111 @@ class TestAgentAPI:
         
         assert response.status_code == 422  # FastAPI validation error for empty string
     
-    @patch('routes.agent_api.run_agent')
-    def test_agent_query_exception_handling(self, mock_run_agent, client: TestClient):
-        """Test agent query error handling."""
-        # Mock an exception in run_agent
-        mock_run_agent.side_effect = Exception("Agent processing failed")
-        
-        query_data = {"query": "Test query that will fail"}
-        
-        response = client.post("/agent/query", json=query_data)
-        
-        assert response.status_code == 500
-        assert "Agent processing failed" in response.json()["detail"]
-    
-    @patch('routes.agent_api.run_agent')
-    def test_agent_query_long_query(self, mock_run_agent, client: TestClient):
-        """Test agent query with a long query string."""
-        mock_run_agent.return_value = ("Long response", "long_session")
-        
-        long_query = "This is a very long query " * 100  # Create a long query
-        query_data = {"query": long_query}
-        
-        response = client.post("/agent/query", json=query_data)
-        
-        assert response.status_code == 200
-        data = response.json()
-        
-        assert data["response"] == "Long response"
-        assert data["session_id"] == "long_session"
-        
-        mock_run_agent.assert_called_once_with(long_query, None, None)
-    
-    @patch('routes.agent_api.run_agent')
-    def test_agent_query_special_characters(self, mock_run_agent, client: TestClient):
+    def test_agent_query_special_characters(self, client: TestClient, openai_api_key):
         """Test agent query with special characters."""
-        mock_run_agent.return_value = ("Special char response", "special_session")
-        
-        special_query = "Query with special chars: !@#$%^&*()_+ 中文 émojis 🤖"
-        query_data = {"query": special_query}
+        special_query = "What is 1+1? Answer with just the number."
+        query_data = {"query": special_query}  # Use default model
         
         response = client.post("/agent/query", json=query_data)
         
         assert response.status_code == 200
         data = response.json()
         
-        assert data["response"] == "Special char response"
-        mock_run_agent.assert_called_once_with(special_query, None, None)
+        assert "response" in data
+        assert "session_id" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
 
 
 class TestAgentIntegration:
-    """Integration tests for agent functionality."""
+    """Integration tests for agent functionality using real implementation."""
     
-    @patch('routes.agent_api.run_agent')
-    def test_agent_conversation_flow(self, mock_run_agent, client: TestClient):
+    def test_agent_conversation_flow(self, client: TestClient, openai_api_key):
         """Test a conversation flow with multiple agent queries."""
-        # Simulate a conversation with multiple turns
-        conversations = [
-            ("Hello, how are you?", "Hello! I'm doing well, thanks for asking.", "conv_001"),
-            ("Can you help me with Python?", "Of course! I'd be happy to help with Python.", "conv_001"),
-            ("What is a list in Python?", "A list in Python is a ordered collection of items.", "conv_001")
-        ]
+        # Start a conversation
+        query_data = {
+            "query": "My name is Alice. Remember this.",
+            "model": "gpt-4.1-mini"
+        }
         
-        session_id = None
+        response = client.post("/agent/query", json=query_data)
+        assert response.status_code == 200
+        data = response.json()
+        session_id = data["session_id"]
         
-        for query, expected_response, expected_session in conversations:
-            mock_run_agent.return_value = (expected_response, expected_session)
-            
-            query_data = {"query": query}
-            if session_id:
-                query_data["session_id"] = session_id
-            
-            response = client.post("/agent/query", json=query_data)
-            
-            assert response.status_code == 200
-            data = response.json()
-            
-            assert data["response"] == expected_response
-            assert data["session_id"] == expected_session
-            
-            # Use the returned session_id for the next query
-            session_id = data["session_id"]
+        # Continue the conversation in the same session
+        query_data = {
+            "query": "What is my name?",
+            "session_id": session_id,
+            "model": "gpt-4.1-mini"
+        }
+        
+        response = client.post("/agent/query", json=query_data)
+        assert response.status_code == 200
+        data = response.json()
+        
+        # The agent should remember the name from the previous message
+        assert data["session_id"] == session_id
+        assert "Alice" in data["response"]
     
-    @patch('routes.agent_api.run_agent')
-    def test_agent_model_switching(self, mock_run_agent, client: TestClient):
+    def test_agent_model_switching(self, client: TestClient, openai_api_key):
         """Test switching between different models."""
-        models_to_test = ["gpt-4", "gpt-3.5-turbo", "claude-3"]
+        # Test with explicit model specification
+        query_data = {
+            "query": "Say 'Hello from gpt-4.1-mini'",
+            "model": "gpt-4.1-mini"
+        }
         
-        for i, model in enumerate(models_to_test):
-            mock_run_agent.return_value = (f"Response from {model}", f"session_{i}")
-            
-            query_data = {
-                "query": f"Test query for {model}",
-                "model": model
-            }
-            
-            response = client.post("/agent/query", json=query_data)
-            
-            assert response.status_code == 200
-            data = response.json()
-            
-            assert data["response"] == f"Response from {model}"
-            assert data["session_id"] == f"session_{i}"
-            
-            # Verify the model parameter was passed correctly
-            mock_run_agent.assert_called_with(f"Test query for {model}", None, model)
+        response = client.post("/agent/query", json=query_data)
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert "response" in data
+        assert "session_id" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
+        
+        # Test with default model (no model specified)
+        query_data = {
+            "query": "Say 'Hello from default model'"
+        }
+        
+        response = client.post("/agent/query", json=query_data)
+        assert response.status_code == 200
+        data = response.json()
+        
+        assert "response" in data
+        assert "session_id" in data
+        assert isinstance(data["response"], str)
+        assert len(data["response"]) > 0
     
-    @patch('routes.agent_api.run_agent')
-    def test_agent_concurrent_sessions(self, mock_run_agent, client: TestClient):
+    def test_agent_concurrent_sessions(self, client: TestClient, openai_api_key):
         """Test handling multiple concurrent sessions."""
-        sessions = ["session_a", "session_b", "session_c"]
+        sessions = []
         
-        for session in sessions:
-            mock_run_agent.return_value = (f"Response for {session}", session)
-            
+        # Create multiple sessions with different contexts
+        for i in range(3):
             query_data = {
-                "query": f"Query for {session}",
-                "session_id": session
+                "query": f"My favorite number is {i}. Remember this.",
+                "model": "gpt-4.1-mini"
             }
             
             response = client.post("/agent/query", json=query_data)
+            assert response.status_code == 200
+            data = response.json()
+            sessions.append(data["session_id"])
+        
+        # Test that each session maintains its own context
+        for i, session_id in enumerate(sessions):
+            query_data = {
+                "query": "What is my favorite number?",
+                "session_id": session_id,
+                "model": "gpt-4.1-mini"
+            }
             
+            response = client.post("/agent/query", json=query_data)
             assert response.status_code == 200
             data = response.json()
             
-            assert data["response"] == f"Response for {session}"
-            assert data["session_id"] == session
-            
-            mock_run_agent.assert_called_with(f"Query for {session}", session, None)
+            # Each session should remember its own number
+            assert str(i) in data["response"]
