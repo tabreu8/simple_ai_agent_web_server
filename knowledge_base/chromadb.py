@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 import uuid
 import logging
+from agents import function_tool
 
 logger = logging.getLogger(__name__)
 
@@ -223,3 +224,64 @@ def get_chromadb_manager() -> ChromaDBManager:
     if _chromadb_manager is None:
         _chromadb_manager = ChromaDBManager()
     return _chromadb_manager
+
+
+@function_tool
+async def search_knowledge_base(query: str, max_results: int = 5) -> str:
+    """
+    Search the knowledge base for relevant documents.
+    
+    This tool searches through the stored documents to find information relevant 
+    to the user's query. Use this when you need to find specific information 
+    from the knowledge base or when answering questions that might be answered 
+    by stored documents.
+    
+    Args:
+        query: The search query to find relevant documents
+        max_results: Maximum number of results to return (default: 5)
+        
+    Returns:
+        A formatted string containing the search results with document content and metadata
+    """
+    try:
+        manager = get_chromadb_manager()
+        
+        # Ensure max_results is within reasonable bounds
+        max_results = max(1, min(max_results, 20))
+        
+        # Perform the search
+        results = manager.query_documents(query, n_results=max_results)
+        
+        if not results["documents"]:
+            return f"No documents found for query: '{query}'"
+        
+        # Format the results for the agent
+        formatted_results = [f"Search Results for: '{query}'\n"]
+        formatted_results.append(f"Found {len(results['documents'])} relevant document(s):\n")
+        
+        for i, (doc, metadata, distance) in enumerate(zip(
+            results["documents"], 
+            results["metadatas"], 
+            results["distances"]
+        )):
+            formatted_results.append(f"--- Result {i+1} (Relevance Score: {1-distance:.3f}) ---")
+            
+            # Add metadata if available
+            if metadata:
+                if "filename" in metadata:
+                    formatted_results.append(f"Source: {metadata['filename']}")
+                if "created_at" in metadata:
+                    formatted_results.append(f"Created: {metadata['created_at']}")
+                if "page_number" in metadata:
+                    formatted_results.append(f"Page: {metadata['page_number']}")
+            
+            # Add document content
+            formatted_results.append("Content:")
+            formatted_results.append(doc[:1000] + "..." if len(doc) > 1000 else doc)
+            formatted_results.append("")  # Empty line for separation
+        
+        return "\n".join(formatted_results)
+        
+    except Exception as e:
+        logger.error(f"Error searching knowledge base: {str(e)}")
+        return f"Error searching knowledge base: {str(e)}"

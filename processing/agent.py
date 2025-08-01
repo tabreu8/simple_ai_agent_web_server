@@ -4,11 +4,12 @@ from typing import Optional
 from dotenv import load_dotenv
 
 from agents import Agent, Runner, SQLiteSession, WebSearchTool
+from knowledge_base.chromadb import search_knowledge_base
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-DEFAULT_MODEL = "gpt-4.1"
+DEFAULT_MODEL = "gpt-4o-mini"
 MEMORY_DIR = os.getenv("AGENT_MEMORY_PATH", "memory")
 DB_PATH = os.path.join(MEMORY_DIR, "conversation_history.db")
 
@@ -33,9 +34,9 @@ async def run_agent(query: str, session_id: Optional[str] = None, model: Optiona
     # Define the agent instance (with optional model override)
     agent = Agent(
         name="Helpful Assistant",
-        instructions="You are a helpful assistant.",
+        instructions="You are a helpful assistant with access to web search and a knowledge base. Use the knowledge base search tool to find relevant information from stored documents when answering questions.",
         model=model or DEFAULT_MODEL,
-        tools=[WebSearchTool()],
+        tools=[WebSearchTool(), search_knowledge_base],
     )
 
     # Set up persistent session memory
