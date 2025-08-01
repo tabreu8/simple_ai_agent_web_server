@@ -12,7 +12,7 @@ jobs:
     
     strategy:
       matrix:
-        python-version: [3.11, 3.12]
+        python-version: [3.12, 3.13]
     
     steps:
     - uses: actions/checkout@v4
@@ -117,7 +117,7 @@ jobs:
     
     - name: Archive test artifacts
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-python-${{ matrix.python-version }}
         path: |
@@ -146,7 +146,7 @@ jobs:
       run: black --check --diff .
     
     - name: Run flake8 (linting)
-      run: flake8 . --max-line-length=120 --exclude=venv,__pycache__,.git
+      run: flake8 . --max-line-length=120 --exclude=venv,__pycache__,.git,.venv --per-file-ignores="tests/*:E501"
     
     - name: Run isort (import sorting check)  
       run: isort --check-only --diff .
@@ -175,7 +175,7 @@ jobs:
     
     - name: Upload security reports
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
