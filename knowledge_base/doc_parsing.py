@@ -1,19 +1,41 @@
 import io
 import logging
-from typing import List, Dict, Any, BinaryIO
-from markitdown import MarkItDown
-import tempfile
 import os
+import tempfile
+from typing import List, Dict, Any, BinaryIO, Optional
+from markitdown import MarkItDown
+from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
 
 class DocumentParser:
-    """Handles document parsing using MarkItDown library."""
+    """Handles document parsing using MarkItDown library with optional LLM enhancement."""
     
-    def __init__(self):
-        """Initialize the MarkItDown parser."""
-        self.md_converter = MarkItDown()
+    def __init__(self, use_llm: bool = False, llm_model: str = "gpt-4o", openai_api_key: Optional[str] = None):
+        """
+        Initialize the MarkItDown parser.
+        
+        Args:
+            use_llm: Whether to enable LLM-enhanced parsing for images and complex documents
+            llm_model: The LLM model to use (only used if use_llm=True)
+            openai_api_key: OpenAI API key (required if use_llm=True)
+        """
+        self.use_llm = use_llm
+        self.llm_model = llm_model
+        
+        if use_llm and openai_api_key:
+            # Initialize MarkItDown with LLM support for enhanced parsing
+            client = OpenAI(api_key=openai_api_key)
+            self.md_converter = MarkItDown(llm_client=client, llm_model=llm_model)
+            logger.info(f"MarkItDown initialized with LLM support using model: {llm_model}")
+        else:
+            # Standard MarkItDown without LLM
+            self.md_converter = MarkItDown()
+            if use_llm:
+                logger.warning("LLM support requested but no OpenAI API key provided. Using standard parsing.")
+            else:
+                logger.info("MarkItDown initialized with standard parsing (no LLM)")
     
     def parse_file_content(self, file_content: bytes, filename: str) -> List[str]:
         """
@@ -184,8 +206,17 @@ _document_parser = None
 
 
 def get_document_parser() -> DocumentParser:
-    """Get or create the global DocumentParser instance."""
+    """Get or create the global DocumentParser instance with environment configuration."""
     global _document_parser
     if _document_parser is None:
-        _document_parser = DocumentParser()
+        # Read configuration from environment
+        use_llm = os.getenv("MARKITDOWN_USE_LLM", "false").lower() == "true"
+        llm_model = os.getenv("MARKITDOWN_LLM_MODEL", "gpt-4o")
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        
+        _document_parser = DocumentParser(
+            use_llm=use_llm,
+            llm_model=llm_model,
+            openai_api_key=openai_api_key
+        )
     return _document_parser

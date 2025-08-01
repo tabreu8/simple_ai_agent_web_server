@@ -157,6 +157,12 @@ The test suite is organized into several categories:
    - Agent-knowledge base interaction
    - Real OpenAI API integration
 
+4. **LLM Parsing Tests** (`test_llm_parsing.py`)
+   - Standard vs LLM-enhanced parsing modes
+   - Environment configuration testing
+   - Parser initialization and fallback behavior
+   - Consistency testing between parsing modes
+
 ### Running Tests
 
 ```bash
@@ -291,15 +297,57 @@ class ChromaDBManager:
 
 ```python
 class DocumentParser:
+    def __init__(self, use_llm: bool = False, llm_model: str = "gpt-4o", openai_api_key: Optional[str] = None):
+        # Initialize MarkItDown with optional LLM enhancement
+        if use_llm and openai_api_key:
+            client = OpenAI(api_key=openai_api_key)
+            self.md_converter = MarkItDown(llm_client=client, llm_model=llm_model)
+        else:
+            self.md_converter = MarkItDown()
+    
     def parse_file_content(self, content: bytes, filename: str):
         # 1. Detect file type
-        # 2. Extract text using MarkItDown
-        # 3. Split into chunks
+        # 2. Extract text using MarkItDown (with optional LLM enhancement)
+        # 3. Split into chunks with intelligent boundaries
         # 4. Return processed chunks
     
     def _split_into_chunks(self, text: str, filename: str):
-        # Intelligent text chunking
-        # Preserves context boundaries
+        # Intelligent text chunking with overlap
+        # Preserves context boundaries (paragraphs, sentences, words)
+```
+
+#### LLM-Enhanced Parsing
+
+The document parser supports two modes:
+
+**Standard Mode** (default):
+- Fast processing using MarkItDown's built-in converters
+- No additional API costs
+- Reliable for most document types
+
+**LLM-Enhanced Mode** (optional):
+- Uses OpenAI's LLM for intelligent document understanding
+- Better image descriptions and complex layout processing
+- Controlled via environment variables:
+
+```env
+MARKITDOWN_USE_LLM=true         # Enable LLM enhancement
+MARKITDOWN_LLM_MODEL=gpt-4o     # Choose model
+```
+
+**Implementation Details:**
+```python
+# Environment-based configuration
+def get_document_parser() -> DocumentParser:
+    use_llm = os.getenv("MARKITDOWN_USE_LLM", "false").lower() == "true"
+    llm_model = os.getenv("MARKITDOWN_LLM_MODEL", "gpt-4o")
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+    
+    return DocumentParser(
+        use_llm=use_llm,
+        llm_model=llm_model,
+        openai_api_key=openai_api_key
+    )
 ```
 
 ## 🔌 Adding New Features
@@ -453,6 +501,8 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 | `CHROMADB_PATH` | ChromaDB storage path | `knowledge_base` |
 | `AGENT_MEMORY_PATH` | Agent session storage | `memory` |
 | `CHROMADB_COLLECTION` | Collection name | `standard_collection` |
+| `MARKITDOWN_USE_LLM` | Enable LLM-enhanced document parsing | `false` |
+| `MARKITDOWN_LLM_MODEL` | LLM model for enhanced parsing | `gpt-4o` |
 
 ### Configuration Validation
 

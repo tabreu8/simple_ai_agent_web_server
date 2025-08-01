@@ -9,6 +9,7 @@ A smart document assistant that helps you upload documents and chat with an AI a
 - 🔍 **Knowledge Search**: Find relevant information from your document collection
 - 💬 **Conversation Memory**: The AI remembers context within conversation sessions
 - 🌐 **Web Access**: AI can also search the web for additional information
+- 🧠 **Enhanced LLM Parsing**: Optional AI-powered document processing for better understanding of complex layouts and images
 
 ## 🚀 Quick Start
 
@@ -185,6 +186,10 @@ OPENAI_API_KEY=your_api_key
 CHROMADB_PATH=knowledge_base     # Where documents are stored
 AGENT_MEMORY_PATH=memory         # Where conversation history is stored
 CHROMADB_COLLECTION=standard_collection  # Database collection name
+
+# Optional - Enhanced Document Parsing
+MARKITDOWN_USE_LLM=false         # Enable LLM-enhanced parsing for images/complex docs
+MARKITDOWN_LLM_MODEL=gpt-4o      # LLM model for enhanced parsing
 ```
 
 ## ❓ Troubleshooting
@@ -207,6 +212,12 @@ CHROMADB_COLLECTION=standard_collection  # Database collection name
 - Check that port 8000 isn't already in use
 - Make sure all dependencies are installed: `pip install -r requirements.txt`
 
+**LLM-enhanced parsing issues:**
+- Ensure `OPENAI_API_KEY` is set when using `MARKITDOWN_USE_LLM=true`
+- LLM parsing will fall back to standard mode if API key is missing
+- Check your OpenAI account has sufficient credits for LLM processing
+- Use `python demo_llm_parsing.py` to test both parsing modes
+
 ## 🤝 Need Help?
 
 - Check the interactive API docs at `http://localhost:8000/docs`
@@ -217,150 +228,44 @@ CHROMADB_COLLECTION=standard_collection  # Database collection name
 
 *Enjoy building your smart document assistant! 🚀*
 
-```bash
-# OpenAI API Key (required for agent functionality)
-OPENAI_API_KEY=your-openai-key-here
-
-# ChromaDB Configuration
-CHROMADB_PATH=knowledge_base              # Database storage path
-CHROMADB_COLLECTION=standard_collection   # Collection name
-```
-
-### 3. Run the Server
-
-```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Start the server
-uvicorn main:app --reload
-```
-
-The server will start at `http://localhost:8000`.
-
-## API Documentation
-
-### Interactive Documentation
-
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-### Agent API
-
-#### Query Agent
-```http
-POST /agent/query
-Content-Type: application/json
-
-{
-  "query": "Hello!",
-  "session_id": "optional-session-id",
-  "model": "optional-model"
-}
-```
-
-Response:
-```json
-{
-  "response": "Hi! How can I help you?",
-  "session_id": "generated-or-provided-id"
-}
-```
-
----
-
-*Enjoy building your smart document assistant! 🚀*
-
-### Document Management API
-
-#### Upload and Process File
-```http
-POST /docs/docs/upload
-Content-Type: multipart/form-data
-
-Upload a PDF, DOCX, or other supported file for processing and storage.
-```
-
-#### Insert Document Chunks
-```http
-POST /docs/docs/insert
-Content-Type: application/json
-
-{
-  "chunks": ["Text chunk 1", "Text chunk 2"],
-  "metadata": [{"source": "manual"}, {"source": "manual"}]
-}
-```
-
-#### Search Documents
-```http
-GET /docs/docs/search?query=your search query&n_results=10&metadata_filter={"source":"manual"}
-```
-
-#### Update Document
-```http
-PUT /docs/docs/{doc_id}
-Content-Type: application/json
-
-{
-  "document": "Updated content",
-  "metadata": {"updated": true}
-}
-```
-
-#### Delete Document
-```http
-DELETE /docs/docs/{doc_id}
-```
-
-#### Get Document
-```http
-GET /docs/docs/{doc_id}
-```
-
-#### Collection Statistics
-```http
-GET /docs/stats
-```
-
-## Configuration
-
-### Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `OPENAI_API_KEY` | Required | Your OpenAI API key |
-| `CHROMADB_PATH` | `knowledge_base` | Directory for ChromaDB storage |
-| `CHROMADB_COLLECTION` | `standard_collection` | ChromaDB collection name |
-| `AGENT_MEMORY_PATH` | `memory` | Directory for agent conversation history storage |
-
-### Supported File Types
-
-The document processing supports the following file types:
-- PDF (`.pdf`)
-- Microsoft Word (`.docx`)
-- PowerPoint (`.pptx`)
-- Excel (`.xlsx`)
-- Text files (`.txt`)
-- Markdown (`.md`)
-- HTML (`.html`)
-- CSV (`.csv`)
-- JSON (`.json`)
-- XML (`.xml`)
-
-## ChromaDB Features
-
-- **Persistent Storage**: Data is automatically saved and persisted across server restarts
-- **Vector Similarity Search**: Semantic search using embeddings
-- **Metadata Filtering**: Filter documents by metadata attributes
-- **Automatic Embeddings**: Documents are automatically embedded using ChromaDB's default embedding function
-
 ## Document Processing Features
 
 - **Automatic Chunking**: Large documents are split into manageable chunks with overlap
 - **Metadata Enrichment**: Automatic addition of source filename, file size, and processing timestamps
 - **Content Extraction**: Text extraction from various file formats using MarkItDown
+- **Enhanced LLM Parsing**: Optional AI-powered parsing for better image descriptions and complex document understanding
 - **Error Handling**: Robust error handling for unsupported files and processing issues
+
+### Enhanced LLM Parsing
+
+For improved document processing, especially with images and complex layouts, you can enable LLM-enhanced parsing:
+
+```env
+MARKITDOWN_USE_LLM=true          # Enable AI-enhanced parsing
+MARKITDOWN_LLM_MODEL=gpt-4o      # Choose your preferred model
+```
+
+**Benefits of LLM-enhanced parsing:**
+- 📸 **Better Image Descriptions**: AI generates detailed descriptions of images, charts, and diagrams
+- 📊 **Complex Layout Understanding**: Enhanced processing of tables, forms, and multi-column layouts  
+- 🎯 **Semantic Content Extraction**: More intelligent text extraction and structure recognition
+- 📋 **Metadata Enhancement**: Richer document metadata and content categorization
+
+**Note:** LLM-enhanced parsing uses additional OpenAI API calls, which may increase costs but significantly improves document understanding quality.
+
+### Testing LLM Enhancement
+
+You can test both parsing modes using the included demo script:
+
+```bash
+python demo_llm_parsing.py
+```
+
+This will show you:
+- Performance comparison between standard and LLM modes
+- Configuration options
+- Use case recommendations
+- Sample output differences
 
 ## Development
 
