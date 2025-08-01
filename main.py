@@ -1,20 +1,14 @@
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from routes.agent_api import router as agent_router
 from routes.docs_api import router as docs_router
 
-app = FastAPI(
-    title="Simple AI Agent Web Server",
-    description="FastAPI server with OpenAI Agents SDK and ChromaDB vector store",
-    version="1.0.0",
-)
 
-
-# Create directories on startup
-@app.on_event("startup")
-async def startup_event():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Initialize the application on startup."""
     # Ensure knowledge base directory exists
     kb_path = os.getenv("CHROMADB_PATH", "knowledge_base")
@@ -25,6 +19,17 @@ async def startup_event():
     memory_path = os.getenv("AGENT_MEMORY_PATH", "memory")
     os.makedirs(memory_path, exist_ok=True)
     print(f"Agent memory directory ensured at: {memory_path}")
+
+    yield
+    # Shutdown code would go here if needed
+
+
+app = FastAPI(
+    title="Simple AI Agent Web Server",
+    description="FastAPI server with OpenAI Agents SDK and ChromaDB vector store",
+    version="1.0.0",
+    lifespan=lifespan,
+)
 
 
 app.include_router(agent_router, prefix="/agent")

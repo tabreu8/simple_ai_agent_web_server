@@ -3,7 +3,9 @@ Test suite for the document API endpoints.
 """
 
 import json
+import os
 
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -96,7 +98,13 @@ class TestDocumentInsert:
 
     def test_insert_file_upload_pdf(self, client: TestClient):
         """Test file upload with PDF file."""
-        pdf_path = "/Users/tiago/Documents/Coding&Stuff/simple_ai_agent_web_server/tests/sample-local-pdf.pdf"
+        # Use relative path from the test file location
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        pdf_path = os.path.join(test_dir, "sample-local-pdf.pdf")
+
+        # Skip test if PDF file doesn't exist
+        if not os.path.exists(pdf_path):
+            pytest.skip(f"PDF test file not found at {pdf_path}")
 
         with open(pdf_path, "rb") as f:
             response = client.post(
@@ -490,7 +498,13 @@ class TestIntegrationFlows:
 
     def test_pdf_upload_and_search_flow(self, client: TestClient):
         """Test PDF file upload followed by search."""
-        pdf_path = "/Users/tiago/Documents/Coding&Stuff/simple_ai_agent_web_server/tests/sample-local-pdf.pdf"
+        # Use relative path from the test file location
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        pdf_path = os.path.join(test_dir, "sample-local-pdf.pdf")
+
+        # Skip test if PDF file doesn't exist
+        if not os.path.exists(pdf_path):
+            pytest.skip(f"PDF test file not found at {pdf_path}")
 
         # 1. Upload a PDF file
         with open(pdf_path, "rb") as f:
