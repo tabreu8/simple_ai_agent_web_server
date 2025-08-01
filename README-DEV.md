@@ -124,6 +124,8 @@ OPENAI_API_KEY=your_openai_api_key
 CHROMADB_PATH=dev_knowledge_base
 AGENT_MEMORY_PATH=dev_memory
 CHROMADB_COLLECTION=dev_collection
+MARKITDOWN_USE_LLM=false
+MARKITDOWN_LLM_MODEL=gpt-4.1
 ```
 
 ### 3. Development Server

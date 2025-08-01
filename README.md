@@ -19,7 +19,7 @@ This project serves as a sample code, to be used to better understand how to use
 
 ### 1. Setup Your Environment
 
-First, make sure you have Python 3.8+ installed. Then:
+First, make sure you have Python >3.12 installed. Then:
 
 ```bash
 # Clone or download this project
@@ -257,109 +257,3 @@ MARKITDOWN_LLM_MODEL=gpt-4o      # Choose your preferred model
 
 **Note:** LLM-enhanced parsing uses additional OpenAI API calls, which may increase costs but significantly improves document understanding quality.
 
-### Testing LLM Enhancement
-
-You can test both parsing modes using the included demo script:
-
-```bash
-python demo_llm_parsing.py
-```
-
-This will show you:
-- Performance comparison between standard and LLM modes
-- Configuration options
-- Use case recommendations
-- Sample output differences
-
-## Development
-
-## Development
-
-### Running Tests
-
-The project includes a comprehensive test suite covering all API endpoints and core functionality.
-
-#### Quick Start
-
-```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Install all dependencies (including test dependencies)
-pip install -r requirements.txt
-
-# Validate test setup
-python3 validate_tests.py
-
-# Run all tests with server startup
-python3 run_tests.py
-
-# Or use make commands (if make is available)
-make test
-```
-
-#### Available Test Commands
-
-```bash
-# Run all tests
-make test
-
-# Run unit tests only (no server required)
-make test-unit
-
-# Run API tests only
-make test-api
-
-# Run with coverage report
-make test-coverage
-
-# Run specific test file
-make test-specific FILE=test_docs_api.py
-
-# Quick test for development (no server startup)
-make test-fast
-
-# Clean test artifacts
-make clean-test
-```
-
-#### Test Categories
-
-- **API Tests**: Complete endpoint testing including document CRUD, search, and agent queries
-- **Unit Tests**: Knowledge base functionality (ChromaDB and document parsing)
-- **Integration Tests**: End-to-end workflows like document upload → search → retrieval
-- **Error Handling**: Comprehensive error condition testing
-
-See `tests/README.md` for detailed testing documentation.
-
-### Running the Development Server
-
-```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Run the server
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-### Code Structure
-
-- **main.py**: FastAPI application setup and startup logic
-- **knowledge_base/chromadb.py**: ChromaDB client management and operations
-- **knowledge_base/doc_parsing.py**: Document parsing and chunking logic
-- **routes/docs_api.py**: Document management API endpoints
-- **routes/agent_api.py**: AI agent API endpoints
-
-## Dependencies
-
-Key dependencies include:
-- `fastapi`: Web framework
-- `uvicorn`: ASGI server
-- `chromadb`: Vector database
-- `markitdown[all]`: Document processing
-- `openai-agents`: OpenAI Agents SDK
-- `python-multipart`: File upload support
-
-## License
-
-This project is licensed under the MIT License.
