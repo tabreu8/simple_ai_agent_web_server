@@ -1,6 +1,10 @@
 # 🤖 AI Agent Web Server
 
+![AI Agent Web Server Banner](readme-banner.png)
+
 A smart document assistant that helps you upload documents and chat with an AI agent that has access to your knowledge base. Upload PDFs, Word documents, or text files, then ask questions and get answers based on your uploaded content!
+
+This project serves as a sample code, to be used to better understand how to use these simple frameworks for AI Agent and RAG use-cases or to serve as a basis of development of more specific or complex use-cases.
 
 ## ✨ What Can It Do?
 
