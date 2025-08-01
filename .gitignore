@@ -18,6 +18,20 @@ build/
 develop-eggs/
 dist/
 downloads/
+
+# ChromaDB data directories (but not source code)
+knowledge_base/chroma.sqlite3
+knowledge_base/chroma.sqlite3-*
+knowledge_base/*.parquet
+knowledge_base/index/
+test_db/
+
+# Agent memory database files
+memory/
+*.db
+
+# Environment variables
+.env
 eggs/
 .eggs/
 lib/

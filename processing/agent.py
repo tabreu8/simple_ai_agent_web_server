@@ -1,27 +1,23 @@
 import os
 import uuid
+from typing import Optional
 from dotenv import load_dotenv
 
 from agents import Agent, Runner, SQLiteSession, WebSearchTool
 
-
-import os
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 DEFAULT_MODEL = "gpt-4.1"
-MEMORY_DIR = "memory"
+MEMORY_DIR = os.getenv("AGENT_MEMORY_PATH", "memory")
 DB_PATH = os.path.join(MEMORY_DIR, "conversation_history.db")
-
-# Ensure the memory directory exists
-os.makedirs(MEMORY_DIR, exist_ok=True)
 
 
 
 
 
 # Main agent runner function
-async def run_agent(query: str, session_id: str = None, model: str = None):
+async def run_agent(query: str, session_id: Optional[str] = None, model: Optional[str] = None):
     """
     Run the agent with the given query, session ID, and optional model override.
     If session_id is not provided, a new one is generated.

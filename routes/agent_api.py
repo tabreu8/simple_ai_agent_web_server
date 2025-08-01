@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from processing.agent import run_agent
 from typing import Optional
 
 class AgentQuery(BaseModel):
-    query: str
+    query: str = Field(..., min_length=1, description="Query text cannot be empty")
     session_id: Optional[str] = None
     model: Optional[str] = None
 
