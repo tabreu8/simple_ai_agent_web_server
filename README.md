@@ -1,5 +1,12 @@
 # 🤖 AI Agent Web Server
 
+[![CI Tests](https://github.com/tabreu8/simple_ai_agent_web_server/actions/workflows/ci.yml/badge.svg)](https://github.com/tabreu8/simple_ai_agent_web_server/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/tabreu8/simple_ai_agent_web_server/graph/badge.svg)](https://codecov.io/gh/tabreu8/simple_ai_agent_web_server)
+[![Python](https://img.shields.io/badge/python-3.12%20%7C%203.13-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1-009688.svg)](https://fastapi.tiangolo.com/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ![AI Agent Web Server Banner](readme-banner.png)
 
 A smart document assistant that helps you upload documents and chat with an AI agent that has access to your knowledge base. Upload PDFs, Word documents, or text files, then ask questions and get answers based on your uploaded content!
@@ -256,4 +263,33 @@ MARKITDOWN_LLM_MODEL=gpt-4o      # Choose your preferred model
 - 📋 **Metadata Enhancement**: Richer document metadata and content categorization
 
 **Note:** LLM-enhanced parsing uses additional OpenAI API calls, which may increase costs but significantly improves document understanding quality.
+
+## 📊 Development & CI/CD
+
+This project includes comprehensive CI/CD setup with:
+
+- **Automated Testing**: Unit tests, integration tests, and API tests
+- **Code Quality**: Black formatting, flake8 linting, isort import sorting
+- **Security Scanning**: Bandit security linting and safety dependency checks
+- **Code Coverage**: Automated coverage reporting via Codecov
+- **Multi-Python Support**: Tests run on Python 3.12 and 3.13
+
+### Setting up Codecov (for coverage badge)
+
+1. Go to [Codecov.io](https://codecov.io) and sign in with your GitHub account
+2. Add your repository to Codecov
+3. Add `CODECOV_TOKEN` to your GitHub repository secrets:
+   - Go to your repo → Settings → Secrets and variables → Actions
+   - Add new repository secret: `CODECOV_TOKEN` with the token from Codecov
+4. The coverage badge will update automatically after your next CI run
+
+### Available Badges
+
+The badges in the README show:
+- **CI Tests**: Current status of automated tests
+- **Code Coverage**: Percentage of code covered by tests  
+- **Python Version**: Supported Python versions
+- **FastAPI Version**: Framework version used
+- **Code Style**: Indicates use of Black code formatter
+- **License**: MIT license information
 

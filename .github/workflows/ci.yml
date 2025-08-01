@@ -23,7 +23,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     
     - name: Cache pip dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -108,12 +108,13 @@ jobs:
     
     - name: Upload coverage reports to Codecov
       if: env.OPENAI_API_KEY != ''
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         file: ./coverage.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
+        token: ${{ secrets.CODECOV_TOKEN }}
     
     - name: Archive test artifacts
       if: always()
